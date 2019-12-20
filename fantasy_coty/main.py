@@ -1,4 +1,7 @@
-"""Initally test the ESPN FF API, using ff_espn_api."""
+"""Fetch data using ESPN's API to determine Coach and GM of the Year for a fantasy league.
+
+Conor Rafferty <craffer@umich.edu>
+"""
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
 
@@ -8,7 +11,7 @@ SEASON_ID = 2019
 
 
 def main():
-    """Determine who had the least difference between maximum possible points and actual points."""
+    """Fetch data and run our algorithm to determine Coach and GM of the Year."""
     league = ff_espn_api.League(league_id=LEAGUE_ID, year=SEASON_ID)
     num_weeks = league.settings.reg_season_count
 
