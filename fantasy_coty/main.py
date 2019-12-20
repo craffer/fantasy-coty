@@ -43,17 +43,19 @@ def main():
     sorted_team_scores = sorted(total_team_score.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
 
     print("\nTotal differentials over the course of a season:")
-    for team, total in sorted_differentials:
-        print(f"{team.team_name} differential: {total:.2f}")
+    for i, (team, total) in enumerate(sorted_differentials):
+        print(f"{i + 1}. {team.team_name} differential: {total:.2f}")
 
     print("\nTotal team scores over the course of a season:")
-    for team, total in sorted_team_scores:
-        print(f"{team.team_name} total score: {total:.2f}")
+    for i, (team, total) in enumerate(sorted_team_scores):
+        print(f"{i + 1}. {team.team_name} total score: {total:.2f}")
 
     print("\nAWARDS")
     print("------")
-    print(f"Coach of the year: {sorted_differentials[0][0].team_name}'s coach.")
-    print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM.")
+    print(f"Coach of the year: {sorted_differentials[0][0].team_name}'s coach, whose starters" +
+          f" scored just {abs(sorted_differentials[0][1]):.2f} less than the team as a whole.")
+    print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole" +
+          f" scored {sorted_team_scores[0][1]:.2f} points in the {SEASON_ID} regular season.")
 
 
 if __name__ == "__main__":
