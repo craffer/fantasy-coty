@@ -116,6 +116,17 @@ def get_sorted_team_scores(results: defaultdict(list), verbose: bool = True) -> 
     return sorted_res
 
 
+def print_awards(league: ff_espn_api.League, sorted_suboptimals: list((ff_espn_api.Team, float)),
+                 sorted_team_scores: list((ff_espn_api.Team, float))) -> None:
+    """Print the team with the best lineups relative to optimal, and the most total team points."""
+    print("\nAWARDS")
+    print("------")
+    print(f"Coach of the year: {sorted_suboptimals[0][0].team_name}'s coach, whose starters" +
+          f" scored just {sorted_suboptimals[0][1]:.2f} less than optimal lineups.")
+    print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole" +
+          f" scored {sorted_team_scores[0][1]:.2f} points in the {league.year} regular season.")
+
+
 def main():
     """Fetch data and run our algorithm to determine Coach and GM of the Year."""
     league = init_league()
@@ -125,20 +136,7 @@ def main():
     sorted_suboptimals = get_sorted_suboptimals(results)
     sorted_team_scores = get_sorted_team_scores(results)
 
-    print("\nTotal suboptimality over the course of a season:")
-    for i, (team, total) in enumerate(sorted_suboptimals):
-        print(f"{i + 1}. {team.team_name} points left on the bench: {total:.2f}")
-
-    print("\nTotal team scores over the course of a season:")
-    for i, (team, total) in enumerate(sorted_team_scores):
-        print(f"{i + 1}. {team.team_name} total score: {total:.2f}")
-
-    print("\nAWARDS")
-    print("------")
-    print(f"Coach of the year: {sorted_suboptimals[0][0].team_name}'s coach, whose starters" +
-          f" scored just {sorted_suboptimals[0][1]:.2f} less than optimal lineups.")
-    print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole" +
-          f" scored {sorted_team_scores[0][1]:.2f} points in the {league.year} regular season.")
+    print_awards(league, sorted_suboptimals, sorted_team_scores)
 
 
 if __name__ == "__main__":
