@@ -13,4 +13,4 @@ Currently, the program operates as follows:
 
 ### Future Planning
 
-Currently, the program doesn't account for things like injured players boosting up manager's hopes for COTY, and doesn't account for positional differences among starters and bench players. In the future, if we can use the API to determine which specific players started and which were benched, we can get a more accurate picture by quantifying "wrong decisions" made by coaches by starting one player over another.
+In the future, we hope to make GM of the year more accurate by accounting for injured players, and hope to include more stats such as Owner of the Year. In the immediate future, our next goal is to allow for leagues with non-standard roster settings to use this program.
