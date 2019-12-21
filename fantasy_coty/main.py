@@ -86,20 +86,34 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
     return res
 
 
-def get_sorted_suboptimals(results: defaultdict(list)) -> list((ff_espn_api.Team, float)):
+def get_sorted_suboptimals(results: defaultdict(list), verbose: bool = True) -> list((ff_espn_api.Team, float)):
     """Return a sorted list of how each team performed relative to the optimal lineup."""
     season_suboptimality = {}
     for team, scores in results.items():
         season_suboptimality[team] = sum(week['suboptimality'] for week in scores)
-    return sorted(season_suboptimality.items(), key=lambda kv: (kv[1], kv[0]))
+    sorted_res = sorted(season_suboptimality.items(), key=lambda kv: (kv[1], kv[0]))
+
+    if verbose:
+        print("\nTotal suboptimality over the course of a season:")
+        for i, (team, total) in enumerate(sorted_res):
+            print(f"{i + 1}. {team.team_name} points left on the bench: {total:.2f}")
+
+    return sorted_res
 
 
-def get_sorted_team_scores(results: defaultdict(list)) -> list((ff_espn_api.Team, float)):
+def get_sorted_team_scores(results: defaultdict(list), verbose: bool = True) -> list((ff_espn_api.Team, float)):
     """Return a sorted list of how each team (including bench players) performed."""
     total_team_score = {}
     for team, scores in results.items():
         total_team_score[team] = sum(week['whole_team'] for week in scores)
-    return sorted(total_team_score.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+    sorted_res = sorted(total_team_score.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+
+    if verbose:
+        print("\nTotal team scores over the course of a season:")
+        for i, (team, total) in enumerate(sorted_res):
+            print(f"{i + 1}. {team.team_name} total score: {total:.2f}")
+
+    return sorted_res
 
 
 def main():
