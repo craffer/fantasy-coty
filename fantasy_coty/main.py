@@ -68,8 +68,8 @@ def main():
             home_scores['starters'] = matchup.home_score
             # score of the entire team, including bench
             home_scores['whole_team'] = sum([player.points for player in matchup.home_lineup])
-            # actual score - optimal lineup score
-            home_scores['difference'] = home_scores['starters'] - home_optimal
+            # suboptimality = optimal lineup score - actual score
+            home_scores['suboptimality'] = home_optimal - home_scores['starters']
             results[matchup.home_team].append(home_scores)
 
             away_optimal = calc_optimal_score(matchup, False)
@@ -79,14 +79,15 @@ def main():
             # score of the entire team, including bench
             away_scores['whole_team'] = sum([player.points for player in matchup.away_lineup])
             # actual score - optimal lineup score
-            away_scores['difference'] = away_scores['starters'] - away_optimal
+            # suboptimality = optimal lineup score - actual score
+            away_scores['suboptimality'] = away_optimal - away_scores['starters']
             results[matchup.away_team].append(away_scores)
 
-    total_differential = {}
+    season_suboptimality = {}
     for team, scores in results.items():
-        total_differential[team] = sum(week['difference'] for week in scores)
+        season_suboptimality[team] = sum(week['suboptimality'] for week in scores)
 
-    sorted_differentials = sorted(total_differential.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+    sorted_suboptimals = sorted(season_suboptimality.items(), key=lambda kv: (kv[1], kv[0]))
 
     total_team_score = {}
     for team, scores in results.items():
@@ -94,9 +95,9 @@ def main():
 
     sorted_team_scores = sorted(total_team_score.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
 
-    print("\nTotal differentials over the course of a season:")
-    for i, (team, total) in enumerate(sorted_differentials):
-        print(f"{i + 1}. {team.team_name} differential: {total:.2f}")
+    print("\nTotal suboptimality over the course of a season:")
+    for i, (team, total) in enumerate(sorted_suboptimals):
+        print(f"{i + 1}. {team.team_name} points left on the bench: {total:.2f}")
 
     print("\nTotal team scores over the course of a season:")
     for i, (team, total) in enumerate(sorted_team_scores):
@@ -104,8 +105,8 @@ def main():
 
     print("\nAWARDS")
     print("------")
-    print(f"Coach of the year: {sorted_differentials[0][0].team_name}'s coach, whose starters" +
-          f" scored just {abs(sorted_differentials[0][1]):.2f} less than optimal lineups.")
+    print(f"Coach of the year: {sorted_suboptimals[0][0].team_name}'s coach, whose starters" +
+          f" scored just {sorted_suboptimals[0][1]:.2f} less than optimal lineups.")
     print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole" +
           f" scored {sorted_team_scores[0][1]:.2f} points in the {league.year} regular season.")
 
