@@ -11,10 +11,15 @@ import ff_espn_api  # pylint: disable=import-error
 def init_league() -> ff_espn_api.League:
     """Initialize a League object from the command line arguments."""
     parser = argparse.ArgumentParser(description='Determine the fantasy Coach and GM of the Year.')
-    parser.add_argument('league_id', type=int, help='ESPN FF league ID, from the URL.')
-    parser.add_argument('year', type=int, help='Year to analyze.')
+    parser.add_argument('league_id', type=int, help='ESPN FF league ID, from the URL')
+    parser.add_argument('year', type=int, help='year to analyze')
+    parser.add_argument('--username', '-u', type=str, help='ESPN username, if league is private',
+                        default=None)
+    parser.add_argument('--password', '-p', type=str, help='ESPN password, if league is private',
+                        default=None)
     args = parser.parse_args()
-    return ff_espn_api.League(league_id=args.league_id, year=args.year)
+    return ff_espn_api.League(league_id=args.league_id, year=args.year, username=args.username,
+                              password=args.password)
 
 
 def calc_optimal_score(matchup: ff_espn_api.Matchup, home: bool) -> float:
