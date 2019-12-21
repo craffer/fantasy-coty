@@ -51,14 +51,15 @@ def calc_optimal_score(matchup: ff_espn_api.Matchup, home: bool) -> float:
     return sum([sum(i) for i in itertools.zip_longest(*optimal.values(), fillvalue=0)])
 
 
-def process_season(league: ff_espn_api.League) -> defaultdict(list):
+def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultdict(list):
     """Calculate optimal scores and total team scores across a fantasy season."""
     res = defaultdict(list)
 
     num_weeks = league.settings.reg_season_count
 
     for i in range(1, num_weeks + 1):
-        print(f"Processing week {i}...")
+        if verbose:
+            print(f"Processing week {i}...")
         box_scores = league.box_scores(i)
         for matchup in box_scores:
             home_optimal = calc_optimal_score(matchup, True)
