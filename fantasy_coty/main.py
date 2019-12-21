@@ -86,7 +86,8 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
     return res
 
 
-def get_sorted_suboptimals(results: defaultdict(list), verbose: bool = True) -> list((ff_espn_api.Team, float)):
+def get_sorted_suboptimals(results: defaultdict(list), verbose: bool = True
+                           ) -> list((ff_espn_api.Team, float)):
     """Return a sorted list of how each team performed relative to the optimal lineup."""
     season_suboptimality = {}
     for team, scores in results.items():
@@ -101,7 +102,8 @@ def get_sorted_suboptimals(results: defaultdict(list), verbose: bool = True) -> 
     return sorted_res
 
 
-def get_sorted_team_scores(results: defaultdict(list), verbose: bool = True) -> list((ff_espn_api.Team, float)):
+def get_sorted_team_scores(results: defaultdict(list), verbose: bool = True
+                           ) -> list((ff_espn_api.Team, float)):
     """Return a sorted list of how each team (including bench players) performed."""
     total_team_score = {}
     for team, scores in results.items():
