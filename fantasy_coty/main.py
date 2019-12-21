@@ -2,17 +2,23 @@
 
 Conor Rafferty <craffer@umich.edu>
 """
+import argparse
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
 
-# set it up for Delt W17, 2019 season
-LEAGUE_ID = 1371476
-SEASON_ID = 2019
+
+def init_league() -> ff_espn_api.League:
+    """Initialize a League object from the command line arguments."""
+    parser = argparse.ArgumentParser(description='Determine the fantasy Coach and GM of the Year.')
+    parser.add_argument('league_id', type=int, help='ESPN FF league ID, from the URL.')
+    parser.add_argument('year', type=int, help='Year to analyze.')
+    args = parser.parse_args()
+    return ff_espn_api.League(league_id=args.league_id, year=args.year)
 
 
 def main():
     """Fetch data and run our algorithm to determine Coach and GM of the Year."""
-    league = ff_espn_api.League(league_id=LEAGUE_ID, year=SEASON_ID)
+    league = init_league()
     num_weeks = league.settings.reg_season_count
 
     results = defaultdict(list)
@@ -58,7 +64,7 @@ def main():
     print(f"Coach of the year: {sorted_differentials[0][0].team_name}'s coach, whose starters" +
           f" scored just {abs(sorted_differentials[0][1]):.2f} less than the team as a whole.")
     print(f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole" +
-          f" scored {sorted_team_scores[0][1]:.2f} points in the {SEASON_ID} regular season.")
+          f" scored {sorted_team_scores[0][1]:.2f} points in the {league.year} regular season.")
 
 
 if __name__ == "__main__":
