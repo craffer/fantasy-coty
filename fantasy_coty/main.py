@@ -51,12 +51,11 @@ def calc_optimal_score(matchup: ff_espn_api.Matchup, home: bool) -> float:
     return sum([sum(i) for i in itertools.zip_longest(*optimal.values(), fillvalue=0)])
 
 
-def main():
-    """Fetch data and run our algorithm to determine Coach and GM of the Year."""
-    league = init_league()
-    num_weeks = league.settings.reg_season_count
+def process_season(league: ff_espn_api.League) -> defaultdict(list):
+    """Calculate optimal scores and total team scores across a fantasy season."""
+    res = defaultdict(list)
 
-    results = defaultdict(list)
+    num_weeks = league.settings.reg_season_count
 
     for i in range(1, num_weeks + 1):
         print(f"Processing week {i}...")
@@ -70,7 +69,7 @@ def main():
             home_scores['whole_team'] = sum([player.points for player in matchup.home_lineup])
             # suboptimality = optimal lineup score - actual score
             home_scores['suboptimality'] = home_optimal - home_scores['starters']
-            results[matchup.home_team].append(home_scores)
+            res[matchup.home_team].append(home_scores)
 
             away_optimal = calc_optimal_score(matchup, False)
             away_scores = {}
@@ -81,7 +80,16 @@ def main():
             # actual score - optimal lineup score
             # suboptimality = optimal lineup score - actual score
             away_scores['suboptimality'] = away_optimal - away_scores['starters']
-            results[matchup.away_team].append(away_scores)
+            res[matchup.away_team].append(away_scores)
+
+    return res
+
+
+def main():
+    """Fetch data and run our algorithm to determine Coach and GM of the Year."""
+    league = init_league()
+
+    results = process_season(league)
 
     season_suboptimality = {}
     for team, scores in results.items():
