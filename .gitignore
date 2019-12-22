@@ -21,3 +21,4 @@ venv3/
 
 # testing
 .coverage
+htmlcov/
