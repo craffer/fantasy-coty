@@ -38,38 +38,84 @@ def init_league() -> ff_espn_api.League:
     )
 
 
-def calc_optimal_score(matchup: ff_espn_api.Matchup, home: bool) -> float:
+def get_lineup_settings(matchup: ff_espn_api.Matchup) -> defaultdict(int):
+    """Return the number of allowed starters for each position type."""
+    home_lineup = matchup.home_lineup
+    pos_counts = defaultdict(int)
+    for player in home_lineup:
+        if player.slot_position != "BE":
+            pos_counts[player.slot_position] += 1
+    return pos_counts
+
+
+def add_to_optimal(
+    optimal: defaultdict(ff_espn_api.Player),
+    settings: defaultdict(int),
+    player: ff_espn_api.Player,
+    flex: str,
+):
+    """Conditionally replace the lowest scoring player at this position with this player."""
+    pos_list = optimal[player.position]
+    # if a player scores negative points, they'll never be optimal
+    if player.points < 0:
+        return optimal
+
+    # if the optimal lineup hasn't reached the max players for this position yet, it must be
+    # optimal (so far) to include this player
+    if len(pos_list) < settings[player.position]:
+        pos_list.append(player)
+        return optimal
+
+    # otherwise, if we beat the lowest scorer, replace it
+    lowest_scorer = min(pos_list, key=lambda x: x.points)
+    replaced = False
+
+    if player.points > lowest_scorer.points:
+        min_index = pos_list.index(lowest_scorer)
+        pos_list[min_index] = player
+        replaced = True
+
+    # we need to check if the optimal lineup has either the player we replaced or the player
+    # we're checking in the FLEX position
+    flex_player = lowest_scorer if replaced else player
+    if flex_player.position in flex and flex in settings:
+        pos_list = optimal[flex]
+        # same replacement logic as above, just in the FLEX position
+        if len(pos_list) < settings[flex]:
+            pos_list.append(flex_player)
+            return optimal
+        lowest_scorer = min(pos_list, key=lambda x: x.points)
+        if flex_player.points > lowest_scorer.points:
+            min_index = pos_list.index(lowest_scorer)
+            pos_list[min_index] = flex_player
+
+    return optimal
+
+
+def calc_optimal_score(
+    matchup: ff_espn_api.Matchup, settings: defaultdict(int), home: bool
+) -> float:
     """Calculate the optimal line-up score for a team in a Matchup.
 
     Note: this assumes standard lineup settings. We hope to fix this in the future.
     """
+    # TODO: dynamically generate flex options
     flex = "RB/WR/TE"
-    # TODO: this should probably contain Players instead of scores for further analysis
-    optimal = {
-        "QB": [0],
-        "RB": [0, 0],
-        "WR": [0, 0],
-        "TE": [0],
-        flex: [0],
-        "D/ST": [0],
-        "K": [0],
-    }
+    # dictionary from position to list of optimal Players
+    optimal = defaultdict(list)
 
     lineup = matchup.home_lineup if home else matchup.away_lineup
     for player in lineup:
-        pos_list = optimal[player.position]
-        if player.position in flex:
-            if player.points > min(pos_list):
-                # overwrite the lowest score in this position list
-                pos_list[pos_list.index(min(pos_list))] = player.points
-            else:
-                # check if they're the optimal flex
-                optimal[flex][0] = max(optimal[flex][0], player.points)
-        else:
-            pos_list[0] = max(pos_list[0], player.points)
+        # add it to the optimal list for its position if it beats something in that list
+        add_to_optimal(optimal, settings, player, flex)
 
     # sum all the scores across each list in our optimal dictionary
-    return sum([sum(i) for i in itertools.zip_longest(*optimal.values(), fillvalue=0)])
+    opt_score = 0.0
+    for lst in optimal.values():
+        for player in lst:
+            opt_score += player.points
+
+    return opt_score
 
 
 def process_season(
@@ -79,14 +125,16 @@ def process_season(
     res = defaultdict(list)
 
     num_weeks = league.settings.reg_season_count
+    # calculate the number of starters for each position from the first matchup
+    lineup_settings = get_lineup_settings(league.box_scores(1)[0])
 
     for i in range(1, num_weeks + 1):
         if verbose:
             print(f"Processing week {i}...")
         box_scores = league.box_scores(i)
         for matchup in box_scores:
-            home_optimal = calc_optimal_score(matchup, True)
             home_scores = {}
+            home_optimal = calc_optimal_score(matchup, lineup_settings, True)
             # actual score, from the players who started
             home_scores["starters"] = matchup.home_score
             # score of the entire team, including bench
@@ -97,8 +145,8 @@ def process_season(
             home_scores["suboptimality"] = home_optimal - home_scores["starters"]
             res[matchup.home_team].append(home_scores)
 
-            away_optimal = calc_optimal_score(matchup, False)
             away_scores = {}
+            away_optimal = calc_optimal_score(matchup, lineup_settings, False)
             # actual score, from the players who started
             away_scores["starters"] = matchup.away_score
             # score of the entire team, including bench
