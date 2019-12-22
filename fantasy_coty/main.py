@@ -49,9 +49,9 @@ def get_lineup_settings(matchup: ff_espn_api.Matchup) -> defaultdict(int):
 
 
 def add_to_optimal(
-    optimal: defaultdict(ff_espn_api.Player),
+    optimal: defaultdict(ff_espn_api.BoxPlayer),
     settings: defaultdict(int),
-    player: ff_espn_api.Player,
+    player: ff_espn_api.BoxPlayer,
     flex: str,
 ):
     """Conditionally replace the lowest scoring player at this position with this player."""
