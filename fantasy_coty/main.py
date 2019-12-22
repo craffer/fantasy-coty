@@ -3,7 +3,6 @@
 Conor Rafferty <craffer@umich.edu>
 """
 import argparse
-import itertools
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
 
