@@ -13,4 +13,4 @@ Currently, the program operates as follows:
 
 ### Future Planning
 
-In the future, we hope to make GM of the year more accurate by accounting for injured players, and hope to include more stats such as Owner of the Year. In the immediate future, our next goal is to allow for leagues with non-standard roster settings to use this program.
+Our immediate goal is to add testing so that code coverage reaches 100%. In the future, we plan to make GM of the year more accurate by accounting for injured and suspended players, and plan to include more stats such as Owner of the Year (decided by creating some metric that combines Coaching and GM stats). The eventual goal is to transform this command line program into an API with a public-facing website. 
