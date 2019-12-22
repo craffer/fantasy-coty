@@ -89,9 +89,9 @@ class TestAddToOptimal(unittest.TestCase):
 
         # test bumping one RB from RB2 to FLEX
         rb4 = copy.deepcopy(self.default_player)
-        rb3.position = "RB"
-        rb3.points = 11
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb3, self.flex)
+        rb4.position = "RB"
+        rb4.points = 11
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb4, self.flex)
         self.assertIn(12, [x.points for x in self.optimal["RB"]])
         self.assertIn(11, [x.points for x in self.optimal["RB"]])
         self.assertEqual(len(self.optimal["RB"]), self.settings["RB"])
