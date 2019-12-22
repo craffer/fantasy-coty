@@ -7,7 +7,7 @@ This project aims to analyze performance of a fantasy football team's starters e
 To use the program in its current form, clone this repo and (preferably after creating a Python virtual environment) install the dependencies using the command below.
 
 ```bash
-pip3 install -r requirements.txt
+make init
 ```
 
 ## Usage
