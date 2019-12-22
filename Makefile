@@ -20,3 +20,10 @@ style:
 	pycodestyle fantasy_coty
 	pydocstyle fantasy_coty
 	black fantasy_coty
+
+clean:
+	find . -name '__pycache__' -exec rm -rf {} +
+	find . -name '*.pyc' -exec rm -f {} +
+	find . -name '*.pyo' -exec rm -f {} +
+	rm -f .coverage
+	rm -rf htmlcov/
