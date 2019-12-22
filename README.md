@@ -27,6 +27,6 @@ Currently, the program operates as follows:
 3. Award Coach of the Year to the manager whose had the least difference between the optimal lineups and their actual lineups over the course of a season, meaning they made the most of the roster they had
 4. Award GM of the Year to the manager who had the highest total points (including bench players) across a season, meaning they put together the team with the best players
 
-### Future Planning
+## Roadmap
 
 Our immediate goal is to add testing so that code coverage reaches 100%. In the future, we plan to make GM of the year more accurate by accounting for injured and suspended players, and plan to include more stats such as Owner of the Year (decided by creating some metric that combines Coaching and GM stats). The eventual goal is to transform this command line program into an API with a public-facing website.
