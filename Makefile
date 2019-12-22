@@ -14,3 +14,9 @@ test:
 coverage:
 	coverage run --source=fantasy_coty -m unittest discover -s tests/
 	coverage report
+
+# lint using pycodestyle, pydocstyle and reformat with black
+style:
+	pycodestyle fantasy_coty
+	pydocstyle fantasy_coty
+	black fantasy_coty
