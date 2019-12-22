@@ -68,7 +68,12 @@ def calc_optimal_score(matchup: ff_espn_api.Matchup, settings: defaultdict(int),
             add_to_list(optimal[flex], settings, player)
 
     # sum all the scores across each list in our optimal dictionary
-    return sum([sum(i) for i in itertools.zip_longest(*optimal.values(), fillvalue=0)])
+    opt_score = 0.0
+    for lst in optimal.values():
+        for player in lst:
+            opt_score += player.points
+
+    return opt_score
 
 
 def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultdict(list):
