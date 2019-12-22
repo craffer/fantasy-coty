@@ -95,10 +95,7 @@ def add_to_optimal(
 def calc_optimal_score(
     matchup: ff_espn_api.Matchup, settings: defaultdict(int), home: bool
 ) -> float:
-    """Calculate the optimal line-up score for a team in a Matchup.
-
-    Note: this assumes standard lineup settings. We hope to fix this in the future.
-    """
+    """Calculate the optimal line-up score for a team in a Matchup."""
     # TODO: dynamically generate flex options
     flex = "RB/WR/TE"
     # dictionary from position to list of optimal Players
