@@ -205,13 +205,15 @@ def print_awards(
     """Print the team with the best lineups relative to optimal, and the most total team points."""
     print("\nAWARDS")
     print("------")
+    coty_team, coty_sub = sorted_suboptimals[0]
+    gmoty_team, gmoty_points = sorted_team_scores[0]
     print(
-        f"Coach of the year: {sorted_suboptimals[0][0].team_name}'s coach, whose starters"
-        + f" scored just {sorted_suboptimals[0][1]:.2f} less than optimal lineups."
+        f"Coach of the year: Coach {coty_team.owner} of the {coty_team.team_name}, whose starters"
+        + f" scored just {coty_sub:.2f} less than optimal lineups."
     )
     print(
-        f"GM of the year: {sorted_team_scores[0][0].team_name}'s GM, whose team as a whole"
-        + f" scored {sorted_team_scores[0][1]:.2f} points in the {league.year} regular season."
+        f"GM of the year: {gmoty_team.owner} of the {gmoty_team.team_name}, whose team as a whole"
+        + f" scored {gmoty_points:.2f} points in the {league.year} regular season."
     )
 
 
