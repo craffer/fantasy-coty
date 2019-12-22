@@ -32,40 +32,66 @@ def get_lineup_settings(matchup: ff_espn_api.Matchup) -> defaultdict(int):
     return pos_counts
 
 
-def add_to_list(pos_list, settings, player) -> bool:
-    """Conditionally replace the lowest scoring player in a list with this player."""
+def add_to_optimal(
+    optimal: defaultdict(ff_espn_api.Player),
+    settings: defaultdict(int),
+    player: ff_espn_api.Player,
+    flex: str,
+):
+    """Conditionally replace the lowest scoring player at this position with this player."""
+    pos_list = optimal[player.position]
+    # if a player scores negative points, they'll never be optimal
     if player.points < 0:
-        return False
+        return optimal
+
+    # if the optimal lineup hasn't reached the max players for this position yet, it must be
+    # optimal (so far) to include this player
     if len(pos_list) < settings[player.position]:
-        pos_list.append(player.points)
-        return True
+        pos_list.append(player)
+        return optimal
+
     # otherwise, if we beat the lowest scorer, replace it
-    elif player.points > min(pos_list):
-        # TODO: run flex algorithm on player we're replacing here
-        pos_list[pos_list.index(min(pos_list))] = player.points
-        return True
-    # didn't add it to the pos_list
-    return False
+    lowest_scorer = min(pos_list, key=lambda x: x.points)
+    replaced = False
+
+    if player.points > lowest_scorer.points:
+        min_index = pos_list.index(lowest_scorer)
+        pos_list[min_index] = player
+        replaced = True
+
+    # we need to check if the optimal lineup has either the player we replaced or the player
+    # we're checking in the FLEX position
+    flex_player = lowest_scorer if replaced else player
+    if flex_player.position in flex and flex in settings:
+        pos_list = optimal[flex]
+        # same replacement logic as above, just in the FLEX position
+        if len(pos_list) < settings[flex]:
+            pos_list.append(flex_player)
+            return optimal
+        lowest_scorer = min(pos_list, key=lambda x: x.points)
+        if flex_player.points > lowest_scorer.points:
+            min_index = pos_list.index(lowest_scorer)
+            pos_list[min_index] = flex_player
+
+    return optimal
 
 
-def calc_optimal_score(matchup: ff_espn_api.Matchup, settings: defaultdict(int), home: bool
-                       ) -> float:
+def calc_optimal_score(
+    matchup: ff_espn_api.Matchup, settings: defaultdict(int), home: bool
+) -> float:
     """Calculate the optimal line-up score for a team in a Matchup.
 
     Note: this assumes standard lineup settings. We hope to fix this in the future.
     """
     # TODO: dynamically generate flex options
-    flex = 'RB/WR/TE'
-    # TODO: this should probably contain Players instead of scores for further analysis
+    flex = "RB/WR/TE"
+    # dictionary from position to list of optimal Players
     optimal = defaultdict(list)
 
     lineup = matchup.home_lineup if home else matchup.away_lineup
     for player in lineup:
         # add it to the optimal list for its position if it beats something in that list
-        if not add_to_list(optimal[player.position], settings, player) and player.position in flex \
-                and flex in settings:
-            # if it didn't hit for its position and is a possible flex, test its flex potential
-            add_to_list(optimal[flex], settings, player)
+        add_to_optimal(optimal, settings, player, flex)
 
     # sum all the scores across each list in our optimal dictionary
     opt_score = 0.0
