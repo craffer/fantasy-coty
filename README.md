@@ -30,3 +30,7 @@ Currently, the program operates as follows:
 ## Roadmap
 
 Our immediate goal is to add testing so that code coverage reaches 100%. In the future, we plan to make GM of the year more accurate by accounting for injured and suspended players, and plan to include more stats such as Owner of the Year (decided by creating some metric that combines Coaching and GM stats). The eventual goal is to transform this command line program into an API with a public-facing website.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
