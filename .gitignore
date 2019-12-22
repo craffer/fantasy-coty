@@ -19,3 +19,5 @@ venv3/
 # macOS system files
 *.DS_Store
 
+# testing
+.coverage

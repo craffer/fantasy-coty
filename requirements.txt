@@ -3,6 +3,7 @@ astroid==2.3.3
 certifi==2019.11.28
 cfgv==2.0.1
 chardet==3.0.4
+coverage==5.0.1
 ff-espn-api==1.1.9
 identify==1.4.8
 idna==2.8
