@@ -109,6 +109,66 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertIn(rb5.points, [x.points for x in self.optimal[self.flex]])
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
+        # test putting in low WRs with flex spot full
+        wr1 = copy.deepcopy(self.default_player)
+        wr1.position = "WR"
+        wr1.points = 5
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr1, self.flex)
+        self.assertIn(wr1.points, [x.points for x in self.optimal["WR"]])
+        self.assertLess(len(self.optimal["WR"]), self.settings["WR"])
+
+        wr2 = copy.deepcopy(self.default_player)
+        wr2.position = "WR"
+        wr2.points = 7
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr2, self.flex)
+        self.assertIn(wr1.points, [x.points for x in self.optimal["WR"]])
+        self.assertIn(wr2.points, [x.points for x in self.optimal["WR"]])
+        self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
+
+        # test putting in a very high WR, shouldn't bump anything to FLEX
+        wr3 = copy.deepcopy(self.default_player)
+        wr3.position = "WR"
+        wr3.points = 30
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr3, self.flex)
+        self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
+        self.assertIn(wr2.points, [x.points for x in self.optimal["WR"]])
+        self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
+        self.assertIn(rb5.points, [x.points for x in self.optimal[self.flex]])
+        self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
+
+        # two more receivers, the second one should bump something to FLEX
+        wr4 = copy.deepcopy(self.default_player)
+        wr4.position = "WR"
+        wr4.points = 28
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr4, self.flex)
+        self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
+        self.assertIn(wr4.points, [x.points for x in self.optimal["WR"]])
+        self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
+        self.assertIn(rb5.points, [x.points for x in self.optimal[self.flex]])
+        self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
+
+        # this should bump WR4 to FLEX
+        wr5 = copy.deepcopy(self.default_player)
+        wr5.position = "WR"
+        wr5.points = 29
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr5, self.flex)
+        self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
+        self.assertIn(wr5.points, [x.points for x in self.optimal["WR"]])
+        self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
+        self.assertIn(wr4.points, [x.points for x in self.optimal[self.flex]])
+        self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
+
+        # finally, this should go directly in FLEX
+        wr6 = copy.deepcopy(self.default_player)
+        wr6.position = "WR"
+        wr6.points = 28.5
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr6, self.flex)
+        self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
+        self.assertIn(wr5.points, [x.points for x in self.optimal["WR"]])
+        self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
+        self.assertIn(wr6.points, [x.points for x in self.optimal[self.flex]])
+        self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
+
 
 if __name__ == "__main__":
     unittest.main()
