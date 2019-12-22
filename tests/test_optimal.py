@@ -37,7 +37,7 @@ class TestAddToOptimal(unittest.TestCase):
             data, pro_schedule, pos_rankings, week
         )
 
-    def test_basic_optimal(self):
+    def test_basic_functionality(self):
         """Test basic functionality of add_to_optimal()."""
         # test basic replacement functionality
         qb1 = copy.deepcopy(self.default_player)
@@ -61,6 +61,8 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(self.optimal["QB"][0].points, 12)
         self.assertEqual(len(self.optimal["QB"]), self.settings["QB"])
 
+    def test_flex_replacement(self):
+        """Test functionality involving of add_to_optimal() involving FLEX."""
         rb1 = copy.deepcopy(self.default_player)
         rb1.position = "RB"
         rb1.points = 20
@@ -168,6 +170,15 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
         self.assertIn(wr6.points, [x.points for x in self.optimal[self.flex]])
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
+
+    def test_negative_player(self):
+        """Make sure negative-scoring players aren't optimal, no matter what."""
+        d1 = copy.deepcopy(self.default_player)
+        d1.position = "D/ST"
+        d1.points = -0.1
+        self.optimal = add_to_optimal(self.optimal, self.settings, d1, self.flex)
+        self.assertNotIn(d1.points, [x.points for x in self.optimal["D/ST"]])
+        self.assertLess(len(self.optimal["D/ST"]), self.settings["D/ST"])
 
 
 if __name__ == "__main__":
