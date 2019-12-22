@@ -7,7 +7,7 @@ run:
 	python3 fantasy_coty/main.py 1371476 2019
 
 # run unit tests
-tests:
+test:
 	python3 -m unittest discover -s tests/
 
 # generate and show a code coverage report
