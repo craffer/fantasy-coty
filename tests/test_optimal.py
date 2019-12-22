@@ -33,56 +33,105 @@ class TestAddToOptimal(unittest.TestCase):
         pro_schedule = {}
         pos_rankings = {}
         week = 0
-        self.default_player = ff_espn_api.BoxPlayer(
+        self.default_players = {}
+        self.default_players["QB"] = ff_espn_api.BoxPlayer(
             data, pro_schedule, pos_rankings, week
         )
+        self.default_players["QB"].eligibleSlots = ["QB", "OP", "BE", "IR"]
+        self.default_players["QB"].position = "QB"
+
+        self.default_players["RB"] = ff_espn_api.BoxPlayer(
+            data, pro_schedule, pos_rankings, week
+        )
+        self.default_players["RB"].eligibleSlots = [
+            "RB",
+            "RB/WR",
+            "RB/WR/TE",
+            "OP",
+            "BE",
+            "IR",
+        ]
+        self.default_players["RB"].position = "RB"
+
+        self.default_players["WR"] = ff_espn_api.BoxPlayer(
+            data, pro_schedule, pos_rankings, week
+        )
+        self.default_players["WR"].eligibleSlots = [
+            "RB/WR",
+            "WR",
+            "WR/TE",
+            "RB/WR/TE",
+            "OP",
+            "BE",
+            "IR",
+        ]
+        self.default_players["WR"].position = "WR"
+
+        self.default_players["TE"] = ff_espn_api.BoxPlayer(
+            data, pro_schedule, pos_rankings, week
+        )
+        self.default_players["TE"].eligibleSlots = [
+            "WR/TE",
+            "TE",
+            "RB/WR/TE",
+            "OP",
+            "BE",
+            "IR",
+        ]
+        self.default_players["TE"].position = "TE"
+
+        self.default_players["D/ST"] = ff_espn_api.BoxPlayer(
+            data, pro_schedule, pos_rankings, week
+        )
+        self.default_players["D/ST"].eligibleSlots = ["D/ST", "BE", "IR"]
+        self.default_players["D/ST"].position = "D/ST"
+
+        self.default_players["K"] = ff_espn_api.BoxPlayer(
+            data, pro_schedule, pos_rankings, week
+        )
+        self.default_players["K"].eligibleSlots = ["K", "BE", "IR"]
+        self.default_players["K"].position = "K"
 
     def test_basic_functionality(self):
         """Test basic functionality of add_to_optimal()."""
         # test basic replacement functionality
-        qb1 = copy.deepcopy(self.default_player)
-        qb1.position = "QB"
+        qb1 = copy.deepcopy(self.default_players["QB"])
         qb1.points = 10
-        self.optimal = add_to_optimal(self.optimal, self.settings, qb1, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, qb1)
         self.assertEqual(self.optimal["QB"][0].points, 10)
         self.assertEqual(len(self.optimal["QB"]), self.settings["QB"])
 
-        qb2 = copy.deepcopy(self.default_player)
-        qb2.position = "QB"
+        qb2 = copy.deepcopy(self.default_players["QB"])
         qb2.points = 8
-        self.optimal = add_to_optimal(self.optimal, self.settings, qb2, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, qb2)
         self.assertEqual(self.optimal["QB"][0].points, 10)
         self.assertEqual(len(self.optimal["QB"]), self.settings["QB"])
 
-        qb3 = copy.deepcopy(self.default_player)
-        qb3.position = "QB"
+        qb3 = copy.deepcopy(self.default_players["QB"])
         qb3.points = 12
-        self.optimal = add_to_optimal(self.optimal, self.settings, qb3, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, qb3)
         self.assertEqual(self.optimal["QB"][0].points, 12)
         self.assertEqual(len(self.optimal["QB"]), self.settings["QB"])
 
     def test_flex_replacement(self):
         """Test functionality involving of add_to_optimal() involving FLEX."""
-        rb1 = copy.deepcopy(self.default_player)
-        rb1.position = "RB"
+        rb1 = copy.deepcopy(self.default_players["RB"])
         rb1.points = 20
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb1, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb1)
         self.assertEqual(self.optimal["RB"][0].points, rb1.points)
         self.assertLess(len(self.optimal["RB"]), self.settings["RB"])
 
-        rb2 = copy.deepcopy(self.default_player)
-        rb2.position = "RB"
+        rb2 = copy.deepcopy(self.default_players["RB"])
         rb2.points = 12
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb2, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb2)
         self.assertIn(rb1.points, [x.points for x in self.optimal["RB"]])
         self.assertIn(rb2.points, [x.points for x in self.optimal["RB"]])
         self.assertEqual(len(self.optimal["RB"]), self.settings["RB"])
 
         # test adding to FLEX when less than the other 2 RBs
-        rb3 = copy.deepcopy(self.default_player)
-        rb3.position = "RB"
+        rb3 = copy.deepcopy(self.default_players["RB"])
         rb3.points = 8
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb3, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb3)
         self.assertIn(rb1.points, [x.points for x in self.optimal["RB"]])
         self.assertIn(rb2.points, [x.points for x in self.optimal["RB"]])
         self.assertEqual(len(self.optimal["RB"]), self.settings["RB"])
@@ -90,10 +139,9 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # test bumping one RB from RB2 to FLEX
-        rb4 = copy.deepcopy(self.default_player)
-        rb4.position = "RB"
+        rb4 = copy.deepcopy(self.default_players["RB"])
         rb4.points = 16
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb4, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb4)
         self.assertIn(rb1.points, [x.points for x in self.optimal["RB"]])
         self.assertIn(rb4.points, [x.points for x in self.optimal["RB"]])
         self.assertEqual(len(self.optimal["RB"]), self.settings["RB"])
@@ -101,10 +149,9 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # test putting something straight away in flex
-        rb5 = copy.deepcopy(self.default_player)
-        rb5.position = "RB"
+        rb5 = copy.deepcopy(self.default_players["RB"])
         rb5.points = 14
-        self.optimal = add_to_optimal(self.optimal, self.settings, rb5, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, rb5)
         self.assertIn(rb1.points, [x.points for x in self.optimal["RB"]])
         self.assertIn(rb4.points, [x.points for x in self.optimal["RB"]])
         self.assertEqual(len(self.optimal["RB"]), self.settings["RB"])
@@ -112,26 +159,23 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # test putting in low WRs with flex spot full
-        wr1 = copy.deepcopy(self.default_player)
-        wr1.position = "WR"
+        wr1 = copy.deepcopy(self.default_players["WR"])
         wr1.points = 5
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr1, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr1)
         self.assertIn(wr1.points, [x.points for x in self.optimal["WR"]])
         self.assertLess(len(self.optimal["WR"]), self.settings["WR"])
 
-        wr2 = copy.deepcopy(self.default_player)
-        wr2.position = "WR"
+        wr2 = copy.deepcopy(self.default_players["WR"])
         wr2.points = 7
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr2, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr2)
         self.assertIn(wr1.points, [x.points for x in self.optimal["WR"]])
         self.assertIn(wr2.points, [x.points for x in self.optimal["WR"]])
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
 
         # test putting in a very high WR, shouldn't bump anything to FLEX
-        wr3 = copy.deepcopy(self.default_player)
-        wr3.position = "WR"
+        wr3 = copy.deepcopy(self.default_players["WR"])
         wr3.points = 30
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr3, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr3)
         self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
         self.assertIn(wr2.points, [x.points for x in self.optimal["WR"]])
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
@@ -139,10 +183,9 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # two more receivers, the second one should bump something to FLEX
-        wr4 = copy.deepcopy(self.default_player)
-        wr4.position = "WR"
+        wr4 = copy.deepcopy(self.default_players["WR"])
         wr4.points = 28
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr4, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr4)
         self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
         self.assertIn(wr4.points, [x.points for x in self.optimal["WR"]])
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
@@ -150,10 +193,9 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # this should bump WR4 to FLEX
-        wr5 = copy.deepcopy(self.default_player)
-        wr5.position = "WR"
+        wr5 = copy.deepcopy(self.default_players["WR"])
         wr5.points = 29
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr5, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr5)
         self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
         self.assertIn(wr5.points, [x.points for x in self.optimal["WR"]])
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
@@ -161,10 +203,9 @@ class TestAddToOptimal(unittest.TestCase):
         self.assertEqual(len(self.optimal[self.flex]), self.settings[self.flex])
 
         # finally, this should go directly in FLEX
-        wr6 = copy.deepcopy(self.default_player)
-        wr6.position = "WR"
+        wr6 = copy.deepcopy(self.default_players["WR"])
         wr6.points = 28.5
-        self.optimal = add_to_optimal(self.optimal, self.settings, wr6, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, wr6)
         self.assertIn(wr3.points, [x.points for x in self.optimal["WR"]])
         self.assertIn(wr5.points, [x.points for x in self.optimal["WR"]])
         self.assertEqual(len(self.optimal["WR"]), self.settings["WR"])
@@ -173,10 +214,9 @@ class TestAddToOptimal(unittest.TestCase):
 
     def test_negative_player(self):
         """Make sure negative-scoring players aren't optimal, no matter what."""
-        d1 = copy.deepcopy(self.default_player)
-        d1.position = "D/ST"
+        d1 = copy.deepcopy(self.default_players["D/ST"])
         d1.points = -0.1
-        self.optimal = add_to_optimal(self.optimal, self.settings, d1, self.flex)
+        self.optimal = add_to_optimal(self.optimal, self.settings, d1)
         self.assertNotIn(d1.points, [x.points for x in self.optimal["D/ST"]])
         self.assertLess(len(self.optimal["D/ST"]), self.settings["D/ST"])
 
