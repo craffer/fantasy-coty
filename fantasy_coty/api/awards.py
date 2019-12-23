@@ -3,11 +3,16 @@ import flask
 import fantasy_coty
 import argparse
 import queue
+import threading
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
 
+# map from league_id to (weeks processed, weeks total)
+running_jobs = {}
+jobs_mtx = threading.Lock()
 
-@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/awards/", methods=["GET"])
+
+@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/start/", methods=["GET"])
 def get_awards(league_id, year):
     """Return Coach and GM of the year for a given league.
 
@@ -24,15 +29,42 @@ def get_awards(league_id, year):
         "url": "/api/v1/1371476/2019/awards/"
     }
     """
-    league = ff_espn_api.League(league_id=league_id, year=year)
+    jobs_mtx.acquire()
+    running_jobs[league_id] = None
+    jobs_mtx.release()
 
+    thread = threading.Thread(target=start_thread, args=[league_id, year])
+    thread.start()
+
+    context = {}
+    context["location"] = f"/api/v1/{league_id}/{year}/progress/"
+
+    return flask.jsonify(**context), 202
+
+
+@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/progress/", methods=["GET"])
+def get_progress(league_id, year):
+    """Get a progress update from a running job."""
+    context = {}
+    jobs_mtx.acquire()
+    weeks_done, weeks_total = running_jobs[league_id]
+    jobs_mtx.release()
+
+    context["weeks_done"] = weeks_done
+    context["weeks_total"] = weeks_total
+
+    return flask.jsonify(**context), 200
+
+
+def start_thread(league_id, year):
+    """Process a fantasy season in a thread."""
+    league = ff_espn_api.League(league_id=league_id, year=year)
     results = process_season(league)
 
     sorted_suboptimals = get_suboptimality(results)
     sorted_totals = get_optimal_points_for(results)
 
-    context = get_awards_dict(league, sorted_suboptimals, sorted_totals)
-    return flask.jsonify(**context)
+    finished_context = get_awards_dict(league, sorted_suboptimals, sorted_totals)
 
 
 def get_lineup_settings(matchup: ff_espn_api.Matchup) -> defaultdict(int):
@@ -124,8 +156,13 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
     lineup_settings = get_lineup_settings(league.box_scores(1)[0])
 
     for i in range(1, num_weeks + 1):
+        jobs_mtx.acquire()
+        running_jobs[league.league_id] = (i, num_weeks)
+        jobs_mtx.release()
+
         if verbose:
             print(f"Processing week {i}...")
+
         box_scores = league.box_scores(i)
         for matchup in box_scores:
             # append a tuple of (actual score, optimal score) for both teams in the matchup
