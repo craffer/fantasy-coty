@@ -6,16 +6,16 @@ This project aims to analyze performance of a fantasy football team's starters e
 
 To use the program in its current form, clone this repo and (preferably after creating a Python virtual environment) install the dependencies using the command below.
 
-```bash
-make init
+```console
+$ make init
 ```
 
 ## Usage
 
 After following the installation instructions above, clone the repo using the command below. If your ESPN league is set to private (not viewable to public), you need to provide your EPSN credentials as the username and password parameters. Here, `league_id` is the 7-digit integer from your ESPN fantasy URL.
 
-```bash
-python3 fantasy_coty/main.py league_id year -u USERNAME -p PASSWORD
+```console
+$ python3 fantasy_coty/main.py league_id year -u USERNAME -p PASSWORD
 ```
 
 ## How It Works
