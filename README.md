@@ -24,7 +24,7 @@ Currently, the program operates as follows:
 
 1. Calculate the highest score possible for a team each week in the regular season
    - This "optimal score" represents the points scored by the best legal (per the league's settings) combination of the players on a team in a given week
-2. Award Coach of the Year to the manager whose team had the least difference between the optimal lineups and their actual lineups over the course of a season, meaning they made the most of the roster they had
+2. Award Coach of the Year to the manager whose team had the least difference between the optimal scores and their actual scores over the course of a season, meaning they made the most of the roster they had
 3. Award GM of the Year to the manager whose team had the highest optimal score total over the course of the season, meaning they put together the best roster
 
 ## Roadmap
