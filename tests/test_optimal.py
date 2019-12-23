@@ -34,15 +34,11 @@ class TestAddToOptimal(unittest.TestCase):
         pos_rankings = {}
         week = 0
         self.default_players = {}
-        self.default_players["QB"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["QB"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["QB"].eligibleSlots = ["QB", "OP", "BE", "IR"]
         self.default_players["QB"].position = "QB"
 
-        self.default_players["RB"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["RB"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["RB"].eligibleSlots = [
             "RB",
             "RB/WR",
@@ -53,9 +49,7 @@ class TestAddToOptimal(unittest.TestCase):
         ]
         self.default_players["RB"].position = "RB"
 
-        self.default_players["WR"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["WR"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["WR"].eligibleSlots = [
             "RB/WR",
             "WR",
@@ -67,9 +61,7 @@ class TestAddToOptimal(unittest.TestCase):
         ]
         self.default_players["WR"].position = "WR"
 
-        self.default_players["TE"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["TE"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["TE"].eligibleSlots = [
             "WR/TE",
             "TE",
@@ -80,15 +72,11 @@ class TestAddToOptimal(unittest.TestCase):
         ]
         self.default_players["TE"].position = "TE"
 
-        self.default_players["D/ST"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["D/ST"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["D/ST"].eligibleSlots = ["D/ST", "BE", "IR"]
         self.default_players["D/ST"].position = "D/ST"
 
-        self.default_players["K"] = ff_espn_api.BoxPlayer(
-            data, pro_schedule, pos_rankings, week
-        )
+        self.default_players["K"] = ff_espn_api.BoxPlayer(data, pro_schedule, pos_rankings, week)
         self.default_players["K"].eligibleSlots = ["K", "BE", "IR"]
         self.default_players["K"].position = "K"
 
