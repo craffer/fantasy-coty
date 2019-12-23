@@ -133,31 +133,18 @@ def process_season(
             print(f"Processing week {i}...")
         box_scores = league.box_scores(i)
         for matchup in box_scores:
-            home_scores = {}
-            home_optimal = calc_optimal_score(matchup, lineup_settings, True)
-            # actual score, from the players who started
-            home_scores["starters"] = matchup.home_score
-            # score of the entire team, including bench
-            home_scores["whole_team"] = sum(
-                [player.points for player in matchup.home_lineup]
+            # append a tuple of (actual score, optimal score) for both teams in the matchup
+            res[matchup.home_team].append(
+                (matchup.home_score, calc_optimal_score(matchup, lineup_settings, True))
             )
-            # suboptimality = optimal lineup score - actual score
-            home_scores["suboptimality"] = home_optimal - home_scores["starters"]
-            res[matchup.home_team].append(home_scores)
-
-            away_scores = {}
-            away_optimal = calc_optimal_score(matchup, lineup_settings, False)
-            # actual score, from the players who started
-            away_scores["starters"] = matchup.away_score
-            # score of the entire team, including bench
-            away_scores["whole_team"] = sum(
-                [player.points for player in matchup.away_lineup]
+            res[matchup.away_team].append(
+                (
+                    matchup.away_score,
+                    calc_optimal_score(matchup, lineup_settings, False),
+                )
             )
-            # actual score - optimal lineup score
-            # suboptimality = optimal lineup score - actual score
-            away_scores["suboptimality"] = away_optimal - away_scores["starters"]
-            res[matchup.away_team].append(away_scores)
 
+    # return a map from team -> list of above tuples, one for each week in the regular season
     return res
 
 
