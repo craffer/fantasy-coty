@@ -1,11 +1,39 @@
-"""Fetch data using ESPN's API to determine Coach and GM of the Year for a fantasy league.
-
-Conor Rafferty <craffer@umich.edu>
-"""
+"""REST API to determine Coach and GM of the Year for a fantasy league."""
+import flask
+import fantasy_coty
 import argparse
 import queue
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
+
+
+@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/awards/", methods=["GET"])
+def get_awards(league_id, year):
+    """Return Coach and GM of the year for a given league.
+
+    Example:
+    {
+        "coty": "Conor Rafferty",
+        "coty_team": "Scituate Sailors",
+        "coty_suboptimal": 199.8,
+        "gmoty": "Conor D. Rafferty",
+        "gmoty_team": "Scituate Sailors 2.0",
+        "gmoty_optimal": 2156.42,
+        "league_id": 1371476,
+        "year": 2019
+        "url": "/api/v1/1371476/2019/awards/"
+    }
+    """
+    league = init_league()
+
+    results = process_season(league)
+
+    sorted_suboptimals = get_suboptimality(results)
+    sorted_totals = get_optimal_points_for(results)
+
+    context = get_awards_dict(league, sorted_suboptimals, sorted_totals)
+
+    return flask.jsonify(**context)
 
 
 def init_league() -> ff_espn_api.League:
@@ -164,37 +192,28 @@ def get_optimal_points_for(
     return sorted_res
 
 
-def print_awards(
+def get_awards_dict(
     league: ff_espn_api.League,
     sorted_suboptimals: list((ff_espn_api.Team, float)),
     sorted_totals: list((ff_espn_api.Team, float)),
 ) -> None:
     """Print the team with the best lineups relative to optimal, and the most total team points."""
-    print("\nAWARDS")
-    print("------")
     coty_team, coty_sub = sorted_suboptimals[0]
     gmoty_team, gmoty_points = sorted_totals[0]
-    print(
-        f"Coach of the year: Coach {coty_team.owner} of the {coty_team.team_name}, whose starters"
-        + f" scored just {coty_sub:.2f} less than optimal lineups."
-    )
-    print(
-        f"GM of the year: {gmoty_team.owner} of the {gmoty_team.team_name}, whose optimal lineups"
-        + f"would have scored {gmoty_points:.2f} points in the {league.year} regular season."
-    )
 
+    context = {}
 
-def main():
-    """Fetch data and run our algorithm to determine Coach and GM of the Year."""
-    league = init_league()
+    context["coty"] = coty_team.owner
+    context["coty_team"] = coty_team.team_name
+    context["coty_suboptimal"] = round(coty_sub, 2)
 
-    results = process_season(league)
+    context["gmoty"] = gmoty_team.owner
+    context["gmoty_team"] = gmoty_team.team_name
+    context["gmoty_optimal"] = round(gmoty_points, 2)
 
-    sorted_suboptimals = get_suboptimality(results)
-    sorted_totals = get_optimal_points_for(results)
+    context["league_id"] = league.league_id
+    context["year"] = league.year
 
-    print_awards(league, sorted_suboptimals, sorted_totals)
+    context["url"] = f"/api/v1/{league.league_id}/{league.year}/awards/"
 
-
-if __name__ == "__main__":
-    main()
+    return context
