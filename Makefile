@@ -1,6 +1,7 @@
 # install dependencies
 init:
 	pip3 install -r requirements.txt
+	pre-commit install
 
 # run on Delt W17, 2019 season
 run:
