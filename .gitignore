@@ -22,3 +22,8 @@ venv3/
 # testing
 .coverage
 htmlcov/
+
+# direnv stuff
+.direnv/
+.envrc
+
