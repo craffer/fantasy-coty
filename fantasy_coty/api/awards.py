@@ -36,6 +36,7 @@ def start_processing():
             args = [league_id, year, False]
             modify_db(query, args)
             # re-query the database to get the newly inserted row
+            query = "SELECT * FROM seasons WHERE leagueid = ? AND year = ?"
             db_row = query_db(query, [league_id, year], one=True)
 
         if not db_row["processed"]:
