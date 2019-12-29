@@ -1,0 +1,60 @@
+#!/bin/bash
+# fantasydb
+
+# stop on errors
+set -e
+
+# sanity check command line options
+usage() {
+    echo "Usage: $0 (create|destroy|reset|testdata|dump)"
+}
+
+if [ $# -ne 1 ]; then
+    usage
+    exit 1
+fi
+
+# parse args, $1 is the first argument
+case $1 in
+    "create")
+        if [ ! -f var/fantasy.sqlite3 ]; then
+            echo "+ sqlite3 var/fantasy.sqlite3 < sql/schema.sql"
+            sqlite3 var/fantasy.sqlite3 < sql/schema.sql
+        else
+            echo "Error: database already exists"
+            exit 1
+        fi
+        ;;
+
+    "destroy")
+        echo "+ rm -rf var/fantasy.sqlite3"
+        rm -rf var/fantasy.sqlite3
+        ;;
+
+    "reset")
+        echo "+ rm -rf var/fantasy.sqlite3"
+        rm -rf var/fantasy.sqlite3
+        echo "+ sqlite3 var/fantasy.sqlite3 < sql/schema.sql"
+        sqlite3 var/fantasy.sqlite3 < sql/schema.sql
+        ;;
+
+    "testdata")
+        if [ ! -f var/fantasy.sqlite3 ]; then
+            echo "Error: database doesn't exist"
+            exit 1
+        else
+            echo "+ sqlite3 var/fantasy.sqlite3 < sql/testdata.sql"
+            sqlite3 var/fantasy.sqlite3 < sql/testdata.sql
+        fi
+        ;;
+
+    "dump")
+        set -x
+        sqlite3 -batch -line var/fantasy.sqlite3 "SELECT * FROM seasons"
+        sqlite3 -batch -line var/fantasy.sqlite3 "SELECT * FROM teams"
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
