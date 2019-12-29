@@ -25,7 +25,7 @@ def start_processing():
             # this season has never been processed, start it up
             # TODO: check if they own the league first
             processor.jobs_mtx.acquire()
-            processor.running_jobs[league_id] = None
+            processor.running_jobs[league_id] = (0, -1, False)
             processor.jobs_mtx.release()
 
             thread = threading.Thread(target=processor.start_thread, args=[league_id, year])
@@ -76,11 +76,28 @@ def get_awards(league_id, year):
 def get_progress(league_id, year):
     """Get a progress update from a running job."""
     context = {}
+
+    # TODO: this should rely on a database as well
+
+    seen = False
     processor.jobs_mtx.acquire()
-    weeks_done, weeks_total = processor.running_jobs[league_id]
+    if league_id in processor.running_jobs:
+        status = processor.running_jobs[league_id]
+        seen = True
     processor.jobs_mtx.release()
+
+    if not seen:
+        context["message"] = "Not Found"
+        context["status_code"] = "404"
+        return flask.jsonify(**context), 404
+
+    weeks_done, weeks_total, finished = status
 
     context["weeks_done"] = weeks_done
     context["weeks_total"] = weeks_total
+
+    # we're finished, give them the endpoint with the results
+    if finished:
+        context["location"] = f"/api/v1{league_id}/{year}/results/"
 
     return flask.jsonify(**context), 200

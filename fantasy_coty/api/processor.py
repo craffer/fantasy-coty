@@ -4,7 +4,7 @@ import queue
 from collections import defaultdict
 import ff_espn_api
 
-# map from league_id to (weeks processed, weeks total)
+# map from league_id to (weeks processed, weeks total, finished)
 running_jobs = {}
 jobs_mtx = threading.Lock()
 
@@ -110,7 +110,7 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
 
     for i in range(1, num_weeks + 1):
         jobs_mtx.acquire()
-        running_jobs[league.league_id] = (i, num_weeks)
+        running_jobs[league.league_id] = (i, num_weeks, False)
         jobs_mtx.release()
 
         if verbose:
@@ -125,6 +125,10 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
             res[matchup.away_team].append(
                 (matchup.away_score, calc_optimal_score(matchup, lineup_settings, False))
             )
+
+    jobs_mtx.acquire()
+    running_jobs[league.league_id] = (num_weeks, num_weeks, True)
+    jobs_mtx.release()
 
     # return a map from team -> list of above tuples, one for each week in the regular season
     return res
