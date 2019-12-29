@@ -13,8 +13,6 @@ CREATE TABLE teams(
     owner VARCHAR(64) NOT NULL,
     optimal REAL NOT NULL,
     actual REAL NOT NULL,
-    coty_rank INTEGER NOT NULL,
-    gmoty_rank INTEGER NOT NULL,
     created DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(seasonid) REFERENCES seasons(seasonid)
         ON DELETE CASCADE
