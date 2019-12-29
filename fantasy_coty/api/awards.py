@@ -1,11 +1,10 @@
 """REST API to determine Coach and GM of the Year for a fantasy league."""
-import flask
-import fantasy_coty
-import argparse
-import queue
 import threading
+import queue
 from collections import defaultdict
 import ff_espn_api  # pylint: disable=import-error
+import flask  # pylint: disable=import-error
+import fantasy_coty
 
 # map from league_id to (weeks processed, weeks total)
 running_jobs = {}
