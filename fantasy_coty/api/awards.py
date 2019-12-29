@@ -52,7 +52,7 @@ def start_processing():
     return flask.redirect(flask.url_for("TODO"))
 
 
-@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/start/", methods=["GET"])
+@fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/results/", methods=["GET"])
 def get_awards(league_id, year):
     """Return Coach and GM of the year for a given league.
 
@@ -69,7 +69,42 @@ def get_awards(league_id, year):
         "url": "/api/v1/1371476/2019/awards/"
     }
     """
-    pass
+    # TODO: actually add to SQL tables
+    context = {}
+    query = "SELECT * FROM seasons WHERE leagueid = ? AND year = ? AND processed = true"
+    season_db_row = query_db(query, [league_id, year], one=True)
+
+    if not season_db_row:
+        context["message"] = "Not Found"
+        context["status_code"] = "404"
+        return flask.jsonify(**context), 404
+
+    seasonid = season_db_row["seasonid"]
+    coty_query = (
+        "SELECT teamname, owner, optimal, actual, optimal - actual AS difference FROM "
+        + "teams WHERE seasonid = ? ORDER BY difference ASC"
+    )
+    coty_db_row = query_db(coty_query, [seasonid])[0]
+
+    gmoty_query = (
+        "SELECT teamname, owner, optimal, actual FROM teams WHERE seasonid = ?"
+        + " ORDER BY optimal DESC"
+    )
+    gmoty_db_row = query_db(gmoty_query, [seasonid])[0]
+
+    context["coty"] = coty_db_row["owner"]
+    context["coty_team"] = coty_db_row["teamname"]
+    context["coty_suboptimal"] = coty_db_row["optimal"] - coty_db_row["actual"]
+
+    context["gmoty"] = gmoty_db_row["owner"]
+    context["gmoty_team"] = gmoty_db_row["teamname"]
+    context["gmoty_optimal"] = gmoty_db_row["optimal"]
+
+    context["league_id"] = league_id
+    context["year"] = year
+    context["url"] = f"/api/v1/{league_id}/{year}/awards/"
+
+    return flask.jsonify(**context), 200
 
 
 @fantasy_coty.app.route("/api/v1/<int:league_id>/<int:year>/progress/", methods=["GET"])
