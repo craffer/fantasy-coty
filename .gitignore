@@ -27,3 +27,6 @@ htmlcov/
 .direnv/
 .envrc
 
+# sqlite3 stuff
+*.db
+var/
