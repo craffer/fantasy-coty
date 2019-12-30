@@ -3,6 +3,7 @@ import threading
 import queue
 from collections import defaultdict
 import ff_espn_api
+import fantasy_coty
 from fantasy_coty.model import modify_db, query_db
 
 # map from league_id to (weeks processed, weeks total, finished)
@@ -112,8 +113,7 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
         running_jobs[league.league_id] = (i, num_weeks, False)
         jobs_mtx.release()
 
-        if verbose:
-            print(f"Processing week {i}...")
+        fantasy_coty.app.logger.info(f"{league.league_id}, {league.year}: processing week {i}")
 
         box_scores = league.box_scores(i)
         for matchup in box_scores:
@@ -149,9 +149,11 @@ def db_add_totals(results: defaultdict(list), seasonid: int, verbose: bool = Tru
         query = (
             "INSERT INTO teams(seasonid, teamname, owner, actual, optimal) VALUES (?, ?, ?, ?, ?);"
         )
+        fantasy_coty.app.logger.info(f"adding {team.team_name} totals to database for {seasonid}")
         args = [seasonid, team.team_name, team.owner, actual, optimal]
         modify_db(query, args)
 
+    fantasy_coty.app.logger.info(f"{seasonid} done processing, updating database")
     # now that that's done, update our season record in the database
     query = "UPDATE seasons SET processed = ? WHERE seasonid = ?"
     modify_db(query, [True, seasonid])
