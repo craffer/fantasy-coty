@@ -137,6 +137,6 @@ def get_progress(league_id, year):
 
     # we're finished, give them the endpoint with the results
     if finished:
-        context["location"] = f"/api/v1{league_id}/{year}/results/"
+        context["location"] = f"/api/v1/{league_id}/{year}/results/"
 
     return flask.jsonify(**context), 200
