@@ -3,21 +3,20 @@ import threading
 import queue
 from collections import defaultdict
 import ff_espn_api
+from fantasy_coty.model import modify_db, query_db
 
 # map from league_id to (weeks processed, weeks total, finished)
 running_jobs = {}
 jobs_mtx = threading.Lock()
 
 
-def start_thread(league_id, year):
+def start_thread(league_id, year, season_id, app):
     """Process a fantasy season in a thread."""
-    league = ff_espn_api.League(league_id=league_id, year=year)
-    results = process_season(league)
+    with app.app_context():
+        league = ff_espn_api.League(league_id=league_id, year=year)
+        results = process_season(league)
 
-    sorted_suboptimals = get_suboptimality(results)
-    sorted_totals = get_optimal_points_for(results)
-
-    finished_context = get_awards_dict(league, sorted_suboptimals, sorted_totals)
+        db_add_totals(results, season_id)
 
 
 def get_lineup_settings(matchup: ff_espn_api.Matchup) -> defaultdict(int):
@@ -132,6 +131,30 @@ def process_season(league: ff_espn_api.League, verbose: bool = True) -> defaultd
 
     # return a map from team -> list of above tuples, one for each week in the regular season
     return res
+
+
+def db_add_totals(results: defaultdict(list), seasonid: int, verbose: bool = True):
+    """Add team results to the database."""
+    totals = {}
+    for team, scores in results.items():
+        actual_total = 0
+        optimal_total = 0
+        for actual, optimal in scores:
+            actual_total += actual
+            optimal_total += optimal
+        totals[team] = actual_total, optimal_total
+
+    # add each team and its calculated season totals to the database
+    for team, (actual, optimal) in totals.items():
+        query = (
+            "INSERT INTO teams(seasonid, teamname, owner, actual, optimal) VALUES (?, ?, ?, ?, ?);"
+        )
+        args = [seasonid, team.team_name, team.owner, actual, optimal]
+        modify_db(query, args)
+
+    # now that that's done, update our season record in the database
+    query = "UPDATE seasons SET processed = ? WHERE seasonid = ?"
+    modify_db(query, [True, seasonid])
 
 
 def get_suboptimality(

@@ -28,16 +28,20 @@ def start_processing():
             processor.running_jobs[league_id] = (0, -1, False)
             processor.jobs_mtx.release()
 
-            thread = threading.Thread(target=processor.start_thread, args=[league_id, year])
-            thread.start()
-
             # add this season to the database and mark it as in progress
             query = "INSERT INTO seasons(leagueid, year, processed) VALUES (?, ?, ?);"
             args = [league_id, year, False]
             modify_db(query, args)
+
             # re-query the database to get the newly inserted row
             query = "SELECT * FROM seasons WHERE leagueid = ? AND year = ?"
             db_row = query_db(query, [league_id, year], one=True)
+
+            thread = threading.Thread(
+                target=processor.start_thread,
+                args=[league_id, year, db_row["seasonid"], flask.current_app._get_current_object()],
+            )
+            thread.start()
 
         if not db_row["processed"]:
             # it's currently being processed, return its current processing location
