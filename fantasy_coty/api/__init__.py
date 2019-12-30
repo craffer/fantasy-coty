@@ -1,2 +1,3 @@
 """Fantasy COTY REST API."""
-from fantasy_coty.api.awards import get_awards, get_progress
+from fantasy_coty.api.awards import *
+from fantasy_coty.api.processor import *
