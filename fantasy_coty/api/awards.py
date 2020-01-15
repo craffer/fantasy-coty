@@ -49,7 +49,7 @@ def start_processing():
             return flask.jsonify(**context), 202
         else:
             # it's done already! serve them up the endpoint where the awards data is stored
-            context["location"] = f"/api/v1{league_id}/{year}/results/"
+            context["location"] = f"/api/v1/{league_id}/{year}/results/"
             return flask.jsonify(**context), 200
 
     # otherwise, redirect to search page
